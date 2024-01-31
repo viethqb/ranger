@@ -163,7 +163,7 @@ public class RangerSystemAccessControl
 
   @Override
   public List<ViewExpression> getRowFilters(SystemSecurityContext context, CatalogSchemaTableName tableName) {
-    RangerTrinoAccessRequest request = createAccessRequest(createResource(tableName), context, TrinoAccessType.SELECT);
+    RangerTrinoAccessRequest request = createAccessRequest(createResource(tableName), context.getIdentity(), TrinoAccessType.SELECT);
     RangerAccessResult result = getRowFilterResult(request);
 
     ViewExpression viewExpression = null;
@@ -185,7 +185,7 @@ public class RangerSystemAccessControl
     RangerTrinoAccessRequest request = createAccessRequest(
       createResource(tableName.getCatalogName(), tableName.getSchemaTableName().getSchemaName(),
         tableName.getSchemaTableName().getTableName(), Optional.of(columnName)),
-      context, TrinoAccessType.SELECT);
+      context.getIdentity(), TrinoAccessType.SELECT);
     RangerAccessResult result = getDataMaskResult(request);
 
     ViewExpression viewExpression = null;
@@ -272,18 +272,18 @@ public class RangerSystemAccessControl
   /** SYSTEM **/
 
   @Override
-  public void checkCanSetSystemSessionProperty(SystemSecurityContext context, String propertyName) {
-    if (!hasPermission(createSystemPropertyResource(propertyName), context, TrinoAccessType.ALTER)) {
+  public void checkCanSetSystemSessionProperty(Identity identity, String propertyName) {
+    if (!hasPermission(createSystemPropertyResource(propertyName), identity, TrinoAccessType.ALTER)) {
       LOG.debug("RangerSystemAccessControl.checkCanSetSystemSessionProperty denied");
       AccessDeniedException.denySetSystemSessionProperty(propertyName);
     }
   }
 
   @Override
-  public void checkCanImpersonateUser(SystemSecurityContext context, String userName) {
-    if (!hasPermission(createUserResource(Identity.forUser(userName).build()), context, TrinoAccessType.IMPERSONATE)) {
+  public void checkCanImpersonateUser(Identity identity, String userName) {
+    if (!hasPermission(createUserResource(Identity.forUser(userName).build()), identity, TrinoAccessType.IMPERSONATE)) {
       LOG.debug("RangerSystemAccessControl.checkCanImpersonateUser(" + userName + ") denied");
-      AccessDeniedException.denyImpersonateUser(context.getIdentity().getUser(), userName);
+      AccessDeniedException.denyImpersonateUser(identity.getUser(), userName);
     }
   }
 
@@ -655,17 +655,17 @@ public class RangerSystemAccessControl
 
   /**
    * This is a NOOP. Everyone can execute a query
-   * @param context
+   * @param identity
    */
   @Override
-  public void checkCanExecuteQuery(SystemSecurityContext context) {
+  public void checkCanExecuteQuery(Identity identity) {
   }
 
   @Override
-  public void checkCanViewQueryOwnedBy(SystemSecurityContext context, Identity queryOwner) {
-    if (!hasPermission(createUserResource(queryOwner), context, TrinoAccessType.IMPERSONATE)) {
+  public void checkCanViewQueryOwnedBy(Identity identity, Identity queryOwner) {
+    if (!hasPermission(createUserResource(queryOwner), identity, TrinoAccessType.IMPERSONATE)) {
       LOG.debug("RangerSystemAccessControl.checkCanViewQueryOwnedBy(" + queryOwner.getUser() + ") denied");
-      AccessDeniedException.denyImpersonateUser(context.getIdentity().getUser(), queryOwner.getUser());
+      AccessDeniedException.denyImpersonateUser(identity.getUser(), queryOwner.getUser());
     }
   }
 
@@ -673,15 +673,15 @@ public class RangerSystemAccessControl
    * This is a NOOP, no filtering is applied
    */
   @Override
-  public Collection<Identity> filterViewQueryOwnedBy(SystemSecurityContext context, Collection<Identity> queryOwners) {
+  public Collection<Identity> filterViewQueryOwnedBy(Identity identity, Collection<Identity> queryOwners) {
     return queryOwners;
   }
 
   @Override
-  public void checkCanKillQueryOwnedBy(SystemSecurityContext context, Identity queryOwner) {
-    if (!hasPermission(createUserResource(queryOwner), context, TrinoAccessType.IMPERSONATE)) {
+  public void checkCanKillQueryOwnedBy(Identity identity, Identity queryOwner) {
+    if (!hasPermission(createUserResource(queryOwner), identity, TrinoAccessType.IMPERSONATE)) {
       LOG.debug("RangerSystemAccessControl.checkCanKillQueryOwnedBy(" + queryOwner + ") denied");
-      AccessDeniedException.denyImpersonateUser(context.getIdentity().getUser(), queryOwner.getUser());
+      AccessDeniedException.denyImpersonateUser(identity.getUser(), queryOwner.getUser());
     }
   }
 
@@ -722,11 +722,11 @@ public class RangerSystemAccessControl
 
   /** HELPER FUNCTIONS **/
 
-  private RangerTrinoAccessRequest createAccessRequest(RangerTrinoResource resource, SystemSecurityContext context, TrinoAccessType accessType) {
+  private RangerTrinoAccessRequest createAccessRequest(RangerTrinoResource resource, Identity identity, TrinoAccessType accessType) {
     Set<String> userGroups = null;
 
     if (useUgi) {
-      UserGroupInformation ugi = UserGroupInformation.createRemoteUser(context.getIdentity().getUser());
+      UserGroupInformation ugi = UserGroupInformation.createRemoteUser(identity.getUser());
 
       String[] groups = ugi != null ? ugi.getGroupNames() : null;
 
@@ -734,12 +734,12 @@ public class RangerSystemAccessControl
         userGroups = new HashSet<>(Arrays.asList(groups));
       }
     } else {
-      userGroups = context.getIdentity().getGroups();
+      userGroups = identity.getGroups();
     }
 
     RangerTrinoAccessRequest request = new RangerTrinoAccessRequest(
       resource,
-      context.getIdentity().getUser(),
+      identity.getUser(),
       userGroups,
       accessType
     );
@@ -748,9 +748,13 @@ public class RangerSystemAccessControl
   }
 
   private boolean hasPermission(RangerTrinoResource resource, SystemSecurityContext context, TrinoAccessType accessType) {
+    return hasPermission(resource, context.getIdentity(), accessType);
+  }
+
+  private boolean hasPermission(RangerTrinoResource resource, Identity identity, TrinoAccessType accessType) {
     boolean ret = false;
 
-    RangerTrinoAccessRequest request = createAccessRequest(resource, context, accessType);
+    RangerTrinoAccessRequest request = createAccessRequest(resource, identity, accessType);
 
     RangerAccessResult result = rangerPlugin.isAccessAllowed(request);
     if (result != null && result.getIsAllowed()) {

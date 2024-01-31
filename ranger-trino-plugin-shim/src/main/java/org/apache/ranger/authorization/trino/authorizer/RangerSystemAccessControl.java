@@ -74,10 +74,10 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public void checkCanSetSystemSessionProperty(SystemSecurityContext context, String propertyName) {
+  public void checkCanSetSystemSessionProperty(Identity identity, String propertyName) {
     try {
       activatePluginClassLoader();
-      systemAccessControlImpl.checkCanSetSystemSessionProperty(context, propertyName);
+      systemAccessControlImpl.checkCanSetSystemSessionProperty(identity, propertyName);
     } finally {
       deactivatePluginClassLoader();
     }
@@ -357,41 +357,41 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public void checkCanImpersonateUser(SystemSecurityContext context, String userName) {
+  public void checkCanImpersonateUser(Identity identity, String userName) {
     try {
       activatePluginClassLoader();
-      systemAccessControlImpl.checkCanImpersonateUser(context, userName);
+      systemAccessControlImpl.checkCanImpersonateUser(identity, userName);
     } finally {
       deactivatePluginClassLoader();
     }
   }
 
   @Override
-  public void checkCanExecuteQuery(SystemSecurityContext context) {
+  public void checkCanExecuteQuery(Identity identity) {
     try {
       activatePluginClassLoader();
-      systemAccessControlImpl.checkCanExecuteQuery(context);
+      systemAccessControlImpl.checkCanExecuteQuery(identity);
     } finally {
       deactivatePluginClassLoader();
     }
   }
 
   @Override
-  public void checkCanViewQueryOwnedBy(SystemSecurityContext context, Identity queryOwner) {
+  public void checkCanViewQueryOwnedBy(Identity identity, Identity queryOwner) {
     try {
       activatePluginClassLoader();
-      systemAccessControlImpl.checkCanViewQueryOwnedBy(context, queryOwner);
+      systemAccessControlImpl.checkCanViewQueryOwnedBy(identity, queryOwner);
     } finally {
       deactivatePluginClassLoader();
     }
   }
 
   @Override
-  public Collection<Identity> filterViewQueryOwnedBy(SystemSecurityContext context, Collection<Identity> queryOwners) {
+  public Collection<Identity> filterViewQueryOwnedBy(Identity identity, Collection<Identity> queryOwners) {
     Collection<Identity> filteredQueryOwners;
     try {
       activatePluginClassLoader();
-      filteredQueryOwners = systemAccessControlImpl.filterViewQueryOwnedBy(context, queryOwners);
+      filteredQueryOwners = systemAccessControlImpl.filterViewQueryOwnedBy(identity, queryOwners);
     } finally {
       deactivatePluginClassLoader();
     }
@@ -399,10 +399,10 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public void checkCanKillQueryOwnedBy(SystemSecurityContext context, Identity queryOwner) {
+  public void checkCanKillQueryOwnedBy(Identity identity, Identity queryOwner) {
     try {
       activatePluginClassLoader();
-      systemAccessControlImpl.checkCanKillQueryOwnedBy(context, queryOwner);
+      systemAccessControlImpl.checkCanKillQueryOwnedBy(identity, queryOwner);
     } finally {
       deactivatePluginClassLoader();
     }
