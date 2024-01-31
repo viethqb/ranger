@@ -462,6 +462,21 @@ public class RangerSystemAccessControl
   }
 
   @Override
+  public void checkCanUpdateTableColumns(SystemSecurityContext context, CatalogSchemaTableName table, Set<String> updatedColumnNames) {
+    Set<String> unauthorizedColumns = new HashSet<>();
+    for (RangerTrinoResource res : createResource(table, updatedColumnNames)) {
+      if (!hasPermission(res, context, TrinoAccessType.UPDATE)) {
+        unauthorizedColumns.add(res.getColumn());
+      }
+    }
+
+    if (!unauthorizedColumns.isEmpty()) {
+      LOG.debug("RangerSystemAccessControl.checkCanUpdateTableColumns(" + table.getSchemaTableName().getTableName() + ") denied");
+      AccessDeniedException.denyUpdateTableColumns(table.toString(), unauthorizedColumns);;
+    }
+  }
+
+  @Override
   public void checkCanGrantTablePrivilege(SystemSecurityContext context, Privilege privilege, CatalogSchemaTableName table, TrinoPrincipal grantee, boolean withGrantOption) {
     if (!hasPermission(createResource(table), context, TrinoAccessType.GRANT)) {
       LOG.debug("RangerSystemAccessControl.checkCanGrantTablePrivilege(" + table + ") denied");
@@ -889,6 +904,10 @@ class RangerTrinoResource
     }
     return Optional.empty();
   }
+
+  public String getColumn() {
+    return (String) getValue(KEY_COLUMN);
+  }
 }
 
 class RangerTrinoAccessRequest
@@ -903,5 +922,5 @@ class RangerTrinoAccessRequest
 }
 
 enum TrinoAccessType {
-  CREATE, DROP, SELECT, INSERT, DELETE, USE, ALTER, ALL, GRANT, REVOKE, SHOW, IMPERSONATE, EXECUTE;
+  CREATE, DROP, SELECT, INSERT, DELETE, USE, ALTER, ALL, GRANT, REVOKE, SHOW, IMPERSONATE, EXECUTE, UPDATE;
 }
