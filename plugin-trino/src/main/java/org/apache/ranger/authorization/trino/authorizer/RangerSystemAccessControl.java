@@ -294,7 +294,7 @@ public class RangerSystemAccessControl
   @Override
   public void checkCanSetCatalogSessionProperty(SystemSecurityContext context, String catalogName, String propertyName) {
     if (!hasPermission(createCatalogSessionResource(catalogName, propertyName), context, TrinoAccessType.ALTER)) {
-      LOG.debug("RangerSystemAccessControl.checkCanSetSystemSessionProperty(" + catalogName + ") denied");
+      LOG.debug("RangerSystemAccessControl.checkCanSetCatalogSessionProperty(" + catalogName + ") denied");
       AccessDeniedException.denySetCatalogSessionProperty(catalogName, propertyName);
     }
   }
@@ -353,7 +353,7 @@ public class RangerSystemAccessControl
    * to create a schema when you have create rights on the catalog level
    */
   @Override
-  public void checkCanCreateSchema(SystemSecurityContext context, CatalogSchemaName schema) {
+  public void checkCanCreateSchema(SystemSecurityContext context, CatalogSchemaName schema, Map<String, Object> properties) {
     if (!hasPermission(createResource(schema.getCatalogName()), context, TrinoAccessType.CREATE)) {
       LOG.debug("RangerSystemAccessControl.checkCanCreateSchema(" + schema.getSchemaName() + ") denied");
       AccessDeniedException.denyCreateSchema(schema.getSchemaName());

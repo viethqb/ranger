@@ -111,13 +111,13 @@ public class RangerSystemAccessControlTest {
     assertEquals(accessControlManager.filterSchemas(context(alice), aliceCatalog, aliceSchemas), aliceSchemas);
     assertEquals(accessControlManager.filterSchemas(context(bob), "alice-catalog", aliceSchemas), ImmutableSet.of());
 
-    accessControlManager.checkCanCreateSchema(context(alice), aliceSchema);
+    accessControlManager.checkCanCreateSchema(context(alice), aliceSchema, Map.of());
     accessControlManager.checkCanDropSchema(context(alice), aliceSchema);
     accessControlManager.checkCanRenameSchema(context(alice), aliceSchema, "new-schema");
     accessControlManager.checkCanShowSchemas(context(alice), aliceCatalog);
 
     try {
-      accessControlManager.checkCanCreateSchema(context(bob), aliceSchema);
+      accessControlManager.checkCanCreateSchema(context(bob), aliceSchema, Map.of());
     } catch (AccessDeniedException expected) {
     }
 

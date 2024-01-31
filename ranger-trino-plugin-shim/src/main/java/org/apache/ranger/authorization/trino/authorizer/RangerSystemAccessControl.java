@@ -104,10 +104,10 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public void checkCanCreateSchema(SystemSecurityContext context, CatalogSchemaName schema) {
+  public void checkCanCreateSchema(SystemSecurityContext context, CatalogSchemaName schema, Map<String, Object> properties) {
     try {
       activatePluginClassLoader();
-      systemAccessControlImpl.checkCanCreateSchema(context, schema);
+      systemAccessControlImpl.checkCanCreateSchema(context, schema, properties);
     } finally {
       deactivatePluginClassLoader();
     }
