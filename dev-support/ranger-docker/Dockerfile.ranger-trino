@@ -20,8 +20,13 @@ FROM trinodb/trino:${TRINO_VERSION}
 
 ARG RANGER_VERSION
 
+USER root
+# install sudo and allow trino user to use sudo without password
+RUN apt-get update && apt-get install -y sudo && apt-get clean && echo 'trino ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
 COPY ./dist/${RANGER_VERSION}.tar.gz /etc/trino
 COPY ./scripts/trino/install.properties /etc/trino
+COPY ./scripts/trino/reload_properties.sh /etc/trino
 
 USER root
 RUN cd /etc/trino && \
@@ -29,6 +34,10 @@ RUN cd /etc/trino && \
     tar xvf ${RANGER_VERSION}.tar.gz -C /etc/trino/${RANGER_VERSION} --strip-components 1 && \
     rm -rf ${RANGER_VERSION}.tar.gz && \
     cp /etc/trino/install.properties /etc/trino/${RANGER_VERSION}/ && \
-    /etc/trino/${RANGER_VERSION}/enable-trino-plugin.sh
+    cp /etc/trino/reload_properties.sh /etc/trino/${RANGER_VERSION}/ && \
+    chmod 0755 /etc/trino/${RANGER_VERSION}/reload_properties.sh
 
 USER trino
+
+ENTRYPOINT ["/bin/bash", "-cx"]
+CMD ["sudo -E /etc/trino/${RANGER_VERSION}/reload_properties.sh && sudo -E /etc/trino/${RANGER_VERSION}/enable-trino-plugin.sh && /usr/lib/trino/bin/run-trino"]

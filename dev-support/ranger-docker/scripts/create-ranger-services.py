@@ -2,7 +2,9 @@ from apache_ranger.model.ranger_service import RangerService
 from apache_ranger.client.ranger_client import RangerClient
 from json import JSONDecodeError
 
-ranger_client = RangerClient('http://ranger:6080', ('admin', 'rangerR0cks!'))
+import os
+
+ranger_client = RangerClient('http://ranger:6080', ('admin', os.environ['RANGER_ADMIN_PASSWORD']))
 
 
 def service_not_exists(service):
@@ -14,7 +16,7 @@ def service_not_exists(service):
 
 
 trino = RangerService({'name': 'dev_trino', 'type': 'trino',
-                       'configs': {'username': 'trino', 'jdbc.url': 'jdbc:trino://ranger-trino:8080', 'jdbc.driverClassName': 'io.trino.jdbc.TrinoDriver',}})
+                       'configs': {'username': 'rangeradmin', 'jdbc.url': 'jdbc:trino://ranger-trino:8080', 'jdbc.driverClassName': 'io.trino.jdbc.TrinoDriver',}})
 
 kms = RangerService({'name': 'dev_kms', 'type': 'kms',
                       'configs': {'username': 'keyadmin', 'password': 'rangerR0cks!',
