@@ -23,12 +23,14 @@ import io.trino.spi.connector.CatalogSchemaRoutineName;
 import io.trino.spi.connector.CatalogSchemaTableName;
 import io.trino.spi.connector.SchemaTableName;
 import io.trino.spi.security.AccessDeniedException;
+import io.trino.spi.security.Identity;
 import io.trino.spi.security.TrinoPrincipal;
 import io.trino.spi.security.Privilege;
 import io.trino.spi.security.SystemAccessControl;
 import io.trino.spi.security.SystemSecurityContext;
 import io.trino.spi.security.ViewExpression;
 import io.trino.spi.type.Type;
+import java.util.Collection;
 import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -179,7 +181,7 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public List<ViewExpression> getColumnMasks(SystemSecurityContext context, CatalogSchemaTableName tableName, String columnName, Type type) {
+  public Optional<ViewExpression> getColumnMask(SystemSecurityContext context, CatalogSchemaTableName tableName, String columnName, Type type) {
     RangerTrinoAccessRequest request = createAccessRequest(
       createResource(tableName.getCatalogName(), tableName.getSchemaTableName().getSchemaName(),
         tableName.getSchemaTableName().getTableName(), Optional.of(columnName)),
@@ -224,7 +226,7 @@ public class RangerSystemAccessControl
 
     }
 
-    return Optional.ofNullable(viewExpression).stream().collect(Collectors.toList());
+    return Optional.ofNullable(viewExpression);
   }
 
 
@@ -279,7 +281,7 @@ public class RangerSystemAccessControl
 
   @Override
   public void checkCanImpersonateUser(SystemSecurityContext context, String userName) {
-    if (!hasPermission(createUserResource(userName), context, TrinoAccessType.IMPERSONATE)) {
+    if (!hasPermission(createUserResource(Identity.forUser(userName).build()), context, TrinoAccessType.IMPERSONATE)) {
       LOG.debug("RangerSystemAccessControl.checkCanImpersonateUser(" + userName + ") denied");
       AccessDeniedException.denyImpersonateUser(context.getIdentity().getUser(), userName);
     }
@@ -660,10 +662,10 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public void checkCanViewQueryOwnedBy(SystemSecurityContext context, String queryOwner) {
+  public void checkCanViewQueryOwnedBy(SystemSecurityContext context, Identity queryOwner) {
     if (!hasPermission(createUserResource(queryOwner), context, TrinoAccessType.IMPERSONATE)) {
-      LOG.debug("RangerSystemAccessControl.checkCanViewQueryOwnedBy(" + queryOwner + ") denied");
-      AccessDeniedException.denyImpersonateUser(context.getIdentity().getUser(), queryOwner);
+      LOG.debug("RangerSystemAccessControl.checkCanViewQueryOwnedBy(" + queryOwner.getUser() + ") denied");
+      AccessDeniedException.denyImpersonateUser(context.getIdentity().getUser(), queryOwner.getUser());
     }
   }
 
@@ -671,15 +673,15 @@ public class RangerSystemAccessControl
    * This is a NOOP, no filtering is applied
    */
   @Override
-  public Set<String> filterViewQueryOwnedBy(SystemSecurityContext context, Set<String> queryOwners) {
+  public Collection<Identity> filterViewQueryOwnedBy(SystemSecurityContext context, Collection<Identity> queryOwners) {
     return queryOwners;
   }
 
   @Override
-  public void checkCanKillQueryOwnedBy(SystemSecurityContext context, String queryOwner) {
+  public void checkCanKillQueryOwnedBy(SystemSecurityContext context, Identity queryOwner) {
     if (!hasPermission(createUserResource(queryOwner), context, TrinoAccessType.IMPERSONATE)) {
       LOG.debug("RangerSystemAccessControl.checkCanKillQueryOwnedBy(" + queryOwner + ") denied");
-      AccessDeniedException.denyImpersonateUser(context.getIdentity().getUser(), queryOwner);
+      AccessDeniedException.denyImpersonateUser(context.getIdentity().getUser(), queryOwner.getUser());
     }
   }
 
@@ -758,9 +760,9 @@ public class RangerSystemAccessControl
     return ret;
   }
 
-  private static RangerTrinoResource createUserResource(String userName) {
+  private static RangerTrinoResource createUserResource(Identity userName) {
     RangerTrinoResource res = new RangerTrinoResource();
-    res.setValue(RangerTrinoResource.KEY_USER, userName);
+    res.setValue(RangerTrinoResource.KEY_USER, userName.getUser());
 
     return res;
   }

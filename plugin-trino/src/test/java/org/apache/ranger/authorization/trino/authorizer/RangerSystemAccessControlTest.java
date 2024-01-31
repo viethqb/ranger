@@ -33,6 +33,7 @@ import static org.junit.Assert.*;
 
 import io.trino.spi.security.ViewExpression;
 import io.trino.spi.type.VarcharType;
+import java.util.Collection;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -56,7 +57,7 @@ public class RangerSystemAccessControlTest {
   //private static final Identity nonAsciiUser = Identity.ofUser("\u0194\u0194\u0194");
 
   private static final Set<String> allCatalogs = ImmutableSet.of("open-to-all", "all-allowed", "alice-catalog");
-  private static final Set<String> queryOwners = ImmutableSet.of("bob", "alice", "frank");
+  private static final Collection<Identity> queryOwners = ImmutableSet.of(Identity.forUser("bob").build(), Identity.forUser("alice").build(), Identity.forUser("frank").build());
   private static final String aliceCatalog = "alice-catalog";
   private static final CatalogSchemaName aliceSchema = new CatalogSchemaName("alice-catalog", "schema");
   private static final CatalogSchemaTableName aliceTable = new CatalogSchemaTableName("alice-catalog", "schema","table");
@@ -175,15 +176,13 @@ public class RangerSystemAccessControlTest {
     // check {type} / {col} replacement
     final VarcharType varcharType = VarcharType.createVarcharType(20);
 
-    List<ViewExpression> ret = accessControlManager.getColumnMasks(context(alice), aliceTable, "cast_me", varcharType);
-    List<ViewExpression> retArray = accessControlManager.getColumnMasks(context(alice), aliceTable, "cast_me", varcharType);
-    assertEquals(1, retArray.size());
-    assertEquals("cast cast_me as varchar(20)", retArray.get(0).getExpression());
+    Optional<ViewExpression> ret = accessControlManager.getColumnMask(context(alice), aliceTable, "cast_me", varcharType);
+    assertEquals("cast cast_me as varchar(20)", ret.get().getExpression());
 
-    retArray = accessControlManager.getColumnMasks(context(alice), aliceTable,"do-not-cast-me", varcharType);
-    assertTrue(retArray.isEmpty());
+    ret = accessControlManager.getColumnMask(context(alice), aliceTable,"do-not-cast-me", varcharType);
+    assertFalse(ret.isPresent());
 
-    retArray = accessControlManager.getRowFilters(context(alice), aliceTable);
+    List<ViewExpression> retArray = accessControlManager.getRowFilters(context(alice), aliceTable);
     assertTrue(retArray.isEmpty());
 
     accessControlManager.checkCanExecuteFunction(context(alice), functionName);

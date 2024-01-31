@@ -17,12 +17,14 @@ import io.trino.spi.connector.CatalogSchemaName;
 import io.trino.spi.connector.CatalogSchemaRoutineName;
 import io.trino.spi.connector.CatalogSchemaTableName;
 import io.trino.spi.connector.SchemaTableName;
+import io.trino.spi.security.Identity;
 import io.trino.spi.security.TrinoPrincipal;
 import io.trino.spi.security.Privilege;
 import io.trino.spi.security.SystemAccessControl;
 import io.trino.spi.security.SystemSecurityContext;
 import io.trino.spi.security.ViewExpression;
 import io.trino.spi.type.Type;
+import java.util.Collection;
 import org.apache.ranger.plugin.classloader.RangerPluginClassLoader;
 
 import javax.inject.Inject;
@@ -375,7 +377,7 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public void checkCanViewQueryOwnedBy(SystemSecurityContext context, String queryOwner) {
+  public void checkCanViewQueryOwnedBy(SystemSecurityContext context, Identity queryOwner) {
     try {
       activatePluginClassLoader();
       systemAccessControlImpl.checkCanViewQueryOwnedBy(context, queryOwner);
@@ -385,8 +387,8 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public Set<String> filterViewQueryOwnedBy(SystemSecurityContext context, Set<String> queryOwners) {
-    Set<String> filteredQueryOwners;
+  public Collection<Identity> filterViewQueryOwnedBy(SystemSecurityContext context, Collection<Identity> queryOwners) {
+    Collection<Identity> filteredQueryOwners;
     try {
       activatePluginClassLoader();
       filteredQueryOwners = systemAccessControlImpl.filterViewQueryOwnedBy(context, queryOwners);
@@ -397,7 +399,7 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public void checkCanKillQueryOwnedBy(SystemSecurityContext context, String queryOwner) {
+  public void checkCanKillQueryOwnedBy(SystemSecurityContext context, Identity queryOwner) {
     try {
       activatePluginClassLoader();
       systemAccessControlImpl.checkCanKillQueryOwnedBy(context, queryOwner);
@@ -542,15 +544,15 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public List<ViewExpression> getColumnMasks(SystemSecurityContext context, CatalogSchemaTableName tableName, String columnName, Type type) {
-    List<ViewExpression> viewExpressionList;
+  public Optional<ViewExpression> getColumnMask(SystemSecurityContext context, CatalogSchemaTableName tableName, String columnName, Type type) {
+    Optional<ViewExpression> viewExpression;
     try {
       activatePluginClassLoader();
-      viewExpressionList = systemAccessControlImpl.getColumnMasks(context, tableName, columnName, type);
+      viewExpression = systemAccessControlImpl.getColumnMask(context, tableName, columnName, type);
     } finally {
       deactivatePluginClassLoader();
     }
-    return viewExpressionList;
+    return viewExpression;
   }
 
   @Override
