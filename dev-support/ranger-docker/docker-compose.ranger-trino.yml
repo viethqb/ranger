@@ -6,8 +6,8 @@ services:
       dockerfile: Dockerfile.ranger-trino
       args:
         - RANGER_VERSION=ranger-3.0.0-SNAPSHOT-trino-plugin
-        - TRINO_VERSION=${TRINO_VERSION:-429}
-    image: ranger-trino:${TRINO_VERSION:-429}
+        - TRINO_VERSION=${TRINO_VERSION:-430}
+    image: ranger-trino:${TRINO_VERSION:-430}
     hostname: ranger-trino
     container_name: ranger-trino
     stdin_open: true
