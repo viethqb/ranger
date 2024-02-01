@@ -711,6 +711,23 @@ public class RangerSystemAccessControl
     return result;
   }
 
+
+  @Override
+  public void checkCanCreateFunction(SystemSecurityContext context, CatalogSchemaRoutineName functionName) {
+    if (!hasPermission(createFunctionResource(functionName), context, TrinoAccessType.CREATE)) {
+      LOG.debug("RangerSystemAccessControl.checkCanCreateFunction(" + functionName.toString() + ") denied");
+      AccessDeniedException.denyCreateFunction(functionName.toString());
+    }
+  }
+
+  @Override
+  public void checkCanDropFunction(SystemSecurityContext context, CatalogSchemaRoutineName functionName) {
+    if (!hasPermission(createFunctionResource(functionName), context, TrinoAccessType.DROP)) {
+      LOG.debug("RangerSystemAccessControl.checkCanDropFunction(" + functionName.toString() + ") denied");
+      AccessDeniedException.denyCreateFunction(functionName.toString());
+    }
+  }
+
   /** PROCEDURES **/
   @Override
   public void checkCanExecuteProcedure(SystemSecurityContext context, CatalogSchemaRoutineName procedure) {

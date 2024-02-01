@@ -625,6 +625,28 @@ public class RangerSystemAccessControl
   }
 
   @Override
+  public void checkCanCreateFunction(SystemSecurityContext systemSecurityContext, CatalogSchemaRoutineName functionName) {
+
+    try {
+      activatePluginClassLoader();
+      systemAccessControlImpl.checkCanCreateFunction(systemSecurityContext, functionName);
+    } finally {
+      deactivatePluginClassLoader();
+    }
+  }
+
+  @Override
+  public void checkCanDropFunction(SystemSecurityContext systemSecurityContext, CatalogSchemaRoutineName functionName) {
+
+    try {
+      activatePluginClassLoader();
+      systemAccessControlImpl.checkCanDropFunction(systemSecurityContext, functionName);
+    } finally {
+      deactivatePluginClassLoader();
+    }
+  }
+
+  @Override
   public boolean canExecuteFunction(SystemSecurityContext systemSecurityContext, CatalogSchemaRoutineName functionName) {
     boolean result;
 

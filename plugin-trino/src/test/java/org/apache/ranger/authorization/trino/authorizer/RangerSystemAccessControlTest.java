@@ -63,6 +63,9 @@ public class RangerSystemAccessControlTest {
   private static final String aliceCatalog = "alice-catalog";
   private static final CatalogSchemaName aliceSchema = new CatalogSchemaName("alice-catalog", "schema");
   private static final CatalogSchemaTableName aliceTable = new CatalogSchemaTableName("alice-catalog", "schema","table");
+
+  private static final Set<String> aliceColumns = Set.of("alice-col1", "alice-col2");
+  private static final Set<String> aliceDeniedColumns = Set.of("alice-col3", "alice-col4");
   private static final CatalogSchemaTableName aliceView = new CatalogSchemaTableName("alice-catalog", "schema","view");
 
   private static final CatalogSchemaRoutineName aliceProcedure = new CatalogSchemaRoutineName("alice-catalog", "schema", "procedure");
@@ -143,7 +146,13 @@ public class RangerSystemAccessControlTest {
     accessControlManager.checkCanDeleteFromTable(context(alice), aliceTable);
     accessControlManager.checkCanRenameColumn(context(alice), aliceTable);
 
+    accessControlManager.checkCanUpdateTableColumns(context(alice), aliceTable, aliceColumns);
 
+    try {
+      accessControlManager.checkCanUpdateTableColumns(context(alice), aliceTable, aliceDeniedColumns);
+    } catch (AccessDeniedException expected) {
+    }
+    
     try {
       accessControlManager.checkCanCreateTable(context(bob), aliceTable,Map.of());
     } catch (AccessDeniedException expected) {
@@ -188,6 +197,24 @@ public class RangerSystemAccessControlTest {
     assertTrue(retArray.isEmpty());
 
     assertTrue(accessControlManager.canExecuteFunction(context(alice), aliceFunction));
+    accessControlManager.checkCanCreateFunction(context(alice), aliceFunction);
+    accessControlManager.checkCanDropFunction(context(alice), aliceFunction);
+
+    assertFalse(accessControlManager.canExecuteFunction(context(bob), aliceFunction));
+    try {
+      accessControlManager.checkCanCreateFunction(context(bob), aliceFunction);
+      throw new AssertionError("expected AccessDeniedExeption");
+    }
+    catch (AccessDeniedException expected) {
+    }
+
+    try {
+      accessControlManager.checkCanDropFunction(context(bob), aliceFunction);
+      throw new AssertionError("expected AccessDeniedExeption");
+    }
+    catch (AccessDeniedException expected) {
+    }
+
     accessControlManager.checkCanExecuteProcedure(context(alice), aliceProcedure);
   }
 
