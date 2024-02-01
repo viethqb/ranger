@@ -650,6 +650,7 @@
                 <module>ranger-util</module>
                 <module>plugin-trino</module>
                 <module>ranger-trino-plugin-shim</module>
+                <module>distro</module>
             </modules>
         </profile>
         <profile>
