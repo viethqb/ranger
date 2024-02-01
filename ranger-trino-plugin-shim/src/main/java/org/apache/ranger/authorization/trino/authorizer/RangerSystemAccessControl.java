@@ -84,13 +84,17 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public void checkCanAccessCatalog(SystemSecurityContext context, String catalogName) {
+  public boolean canAccessCatalog(SystemSecurityContext context, String catalogName) {
+    boolean result;
+
     try {
       activatePluginClassLoader();
-      systemAccessControlImpl.checkCanAccessCatalog(context, catalogName);
+      result = systemAccessControlImpl.canAccessCatalog(context, catalogName);
     } finally {
       deactivatePluginClassLoader();
     }
+
+    return result;
   }
 
   @Override
@@ -566,13 +570,17 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public void checkCanGrantExecuteFunctionPrivilege(SystemSecurityContext context, String functionName, TrinoPrincipal grantee, boolean grantOption) {
+  public boolean canCreateViewWithExecuteFunction(SystemSecurityContext context, CatalogSchemaRoutineName functionName) {
+    boolean result;
+
     try {
       activatePluginClassLoader();
-      systemAccessControlImpl.checkCanGrantExecuteFunctionPrivilege(context, functionName, grantee, grantOption);
+      result = systemAccessControlImpl.canCreateViewWithExecuteFunction(context, functionName);
     } finally {
       deactivatePluginClassLoader();
     }
+
+    return result;
   }
 
   @Override
@@ -617,13 +625,17 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public void checkCanExecuteFunction(SystemSecurityContext systemSecurityContext, String functionName) {
+  public boolean canExecuteFunction(SystemSecurityContext systemSecurityContext, CatalogSchemaRoutineName functionName) {
+    boolean result;
+
     try {
       activatePluginClassLoader();
-      systemAccessControlImpl.checkCanExecuteFunction(systemSecurityContext, functionName);
+      result = systemAccessControlImpl.canExecuteFunction(systemSecurityContext, functionName);
     } finally {
       deactivatePluginClassLoader();
     }
+
+    return result;
   }
 
   private void activatePluginClassLoader() {

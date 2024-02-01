@@ -47,7 +47,7 @@
       "policyLabels": [],
       "zoneName": "",
       "isDenyAllElse": false,
-      "id": 51,
+      "id": 50,
       "guid": "7ab96b62-6fd3-4193-bf49-af462c25784d",
       "isEnabled": true,
       "version": 1
@@ -62,7 +62,7 @@
       "resources": {
         "function": {
           "values": [
-            "function"
+            "alice-catalog.schema.function"
           ],
           "isExcludes": false,
           "isRecursive": false

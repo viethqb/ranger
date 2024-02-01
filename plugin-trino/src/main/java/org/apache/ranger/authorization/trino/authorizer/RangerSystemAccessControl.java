@@ -169,12 +169,12 @@ public class RangerSystemAccessControl
     ViewExpression viewExpression = null;
     if (isRowFilterEnabled(result)) {
       String filter = result.getFilterExpr();
-      viewExpression = new ViewExpression(
-        context.getIdentity().getUser(),
-        Optional.of(tableName.getCatalogName()),
-        Optional.of(tableName.getSchemaTableName().getSchemaName()),
-        filter
-      );
+      viewExpression = ViewExpression.builder()
+          .identity(context.getIdentity().getUser())
+          .catalog(tableName.getCatalogName())
+          .schema(tableName.getSchemaTableName().getSchemaName())
+          .expression(filter)
+          .build();
     }
 
     return Optional.ofNullable(viewExpression).stream().collect(Collectors.toList());
@@ -214,12 +214,12 @@ public class RangerSystemAccessControl
         transformer = transformer.replace("{col}", columnName).replace("{type}", type.getDisplayName());
       }
 
-      viewExpression = new ViewExpression(
-        context.getIdentity().getUser(),
-        Optional.of(tableName.getCatalogName()),
-        Optional.of(tableName.getSchemaTableName().getSchemaName()),
-        transformer
-      );
+      viewExpression = ViewExpression.builder()
+          .identity(context.getIdentity().getUser())
+          .catalog(tableName.getCatalogName())
+          .schema(tableName.getSchemaTableName().getSchemaName())
+          .expression(transformer)
+          .build();
       if (LOG.isDebugEnabled()) {
         LOG.debug("getColumnMask: user: %s, catalog: %s, schema: %s, transformer: %s");
       }
@@ -317,11 +317,14 @@ public class RangerSystemAccessControl
   }
 
   @Override
-  public void checkCanAccessCatalog(SystemSecurityContext context, String catalogName) {
-    if (!hasPermission(createResource(catalogName), context, TrinoAccessType.USE)) {
-      LOG.debug("RangerSystemAccessControl.checkCanAccessCatalog(" + catalogName + ") denied");
-      AccessDeniedException.denyCatalogAccess(catalogName);
+  public boolean canAccessCatalog(SystemSecurityContext context, String catalogName) {
+    boolean result = hasPermission(createResource(catalogName), context, TrinoAccessType.USE);
+
+    if (!result) {
+      LOG.debug("RangerSystemAccessControl.canAccessCatalog(" + catalogName + ") denied");
     }
+
+    return result;
   }
 
   @Override
@@ -687,26 +690,32 @@ public class RangerSystemAccessControl
 
   /** FUNCTIONS **/
   @Override
-  public void checkCanGrantExecuteFunctionPrivilege(SystemSecurityContext context, String function, TrinoPrincipal grantee, boolean grantOption) {
-    if (!hasPermission(createFunctionResource(function), context, TrinoAccessType.GRANT)) {
-      LOG.debug("RangerSystemAccessControl.checkCanGrantExecuteFunctionPrivilege(" + function + ") denied");
-      AccessDeniedException.denyGrantExecuteFunctionPrivilege(function, context.getIdentity(), grantee.getName());
+  public boolean canCreateViewWithExecuteFunction(SystemSecurityContext context, CatalogSchemaRoutineName functionName) {
+    boolean result = hasPermission(createFunctionResource(functionName), context, TrinoAccessType.CREATE);
+
+    if (!result) {
+      LOG.debug("RangerSystemAccessControl.canCreateViewWithExecuteFunction(" + functionName.toString() + ") denied");
     }
+
+    return result;
   }
 
   @Override
-  public void checkCanExecuteFunction(SystemSecurityContext context, String function) {
-    if (!hasPermission(createFunctionResource(function), context, TrinoAccessType.EXECUTE)) {
-      LOG.debug("RangerSystemAccessControl.checkCanExecuteFunction(" + function + ") denied");
-      AccessDeniedException.denyExecuteFunction(function);
+  public boolean canExecuteFunction(SystemSecurityContext context, CatalogSchemaRoutineName functionName) {
+    boolean result = hasPermission(createFunctionResource(functionName), context, TrinoAccessType.EXECUTE);
+
+    if (!result) {
+      LOG.debug("RangerSystemAccessControl.canExecuteFunction(" + functionName.toString() + ") denied");
     }
+
+    return result;
   }
 
   /** PROCEDURES **/
   @Override
   public void checkCanExecuteProcedure(SystemSecurityContext context, CatalogSchemaRoutineName procedure) {
     if (!hasPermission(createProcedureResource(procedure), context, TrinoAccessType.EXECUTE)) {
-      LOG.debug("RangerSystemAccessControl.checkCanExecuteFunction(" + procedure.getSchemaRoutineName().getRoutineName() + ") denied");
+      LOG.debug("RangerSystemAccessControl.checkCanExecuteProcedure(" + procedure.getSchemaRoutineName().getRoutineName() + ") denied");
       AccessDeniedException.denyExecuteProcedure(procedure.getSchemaRoutineName().getRoutineName());
     }
   }
@@ -715,7 +724,7 @@ public class RangerSystemAccessControl
   public void checkCanExecuteTableProcedure(SystemSecurityContext context, CatalogSchemaTableName catalogSchemaTableName, String procedure)
   {
     if (!hasPermission(createResource(catalogSchemaTableName), context, TrinoAccessType.ALTER)) {
-      LOG.debug("RangerSystemAccessControl.checkCanExecuteFunction(" + procedure + ") denied");
+      LOG.debug("RangerSystemAccessControl.checkCanExecuteTableProcedure(" + procedure + ") denied");
       AccessDeniedException.denyExecuteTableProcedure(catalogSchemaTableName.toString(),procedure);
     }
   }
@@ -771,9 +780,9 @@ public class RangerSystemAccessControl
     return res;
   }
 
-  private static RangerTrinoResource createFunctionResource(String function) {
+  private static RangerTrinoResource createFunctionResource(CatalogSchemaRoutineName function) {
     RangerTrinoResource res = new RangerTrinoResource();
-    res.setValue(RangerTrinoResource.KEY_FUNCTION, function);
+    res.setValue(RangerTrinoResource.KEY_FUNCTION, function.toString());
 
     return res;
   }

@@ -66,7 +66,7 @@ public class RangerSystemAccessControlTest {
   private static final CatalogSchemaTableName aliceView = new CatalogSchemaTableName("alice-catalog", "schema","view");
 
   private static final CatalogSchemaRoutineName aliceProcedure = new CatalogSchemaRoutineName("alice-catalog", "schema", "procedure");
-  private static final String functionName = new String("function");
+  private static final CatalogSchemaRoutineName aliceFunction = new CatalogSchemaRoutineName("alice-catalog", "schema", "function");
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -187,8 +187,7 @@ public class RangerSystemAccessControlTest {
     List<ViewExpression> retArray = accessControlManager.getRowFilters(context(alice), aliceTable);
     assertTrue(retArray.isEmpty());
 
-    accessControlManager.checkCanExecuteFunction(context(alice), functionName);
-    accessControlManager.checkCanGrantExecuteFunctionPrivilege(context(alice), functionName, new TrinoPrincipal(USER, "grantee"), true);
+    assertTrue(accessControlManager.canExecuteFunction(context(alice), aliceFunction));
     accessControlManager.checkCanExecuteProcedure(context(alice), aliceProcedure);
   }
 
