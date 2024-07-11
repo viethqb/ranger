@@ -541,6 +541,7 @@
         },
         "table": {
           "values": [
+            "materialized-view",
             "view"
           ],
           "isExcludes": false,
@@ -552,6 +553,10 @@
           "accesses": [
             {
               "type": "select",
+              "isAllowed": true
+            },
+            {
+              "type": "update",
               "isAllowed": true
             },
             {

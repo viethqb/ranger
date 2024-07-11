@@ -320,6 +320,17 @@ public class RangerSystemAccessControl
   }
 
   @Override
+  public void checkCanRefreshMaterializedView(SystemSecurityContext context, CatalogSchemaTableName materializedView) {
+    try{
+      activatePluginClassLoader();
+      systemAccessControlImpl.checkCanDropMaterializedView(context,materializedView);
+    }
+    finally {
+      deactivatePluginClassLoader();
+    }
+  }
+
+  @Override
   public void checkCanDropView(SystemSecurityContext context, CatalogSchemaTableName view) {
     try {
       activatePluginClassLoader();
