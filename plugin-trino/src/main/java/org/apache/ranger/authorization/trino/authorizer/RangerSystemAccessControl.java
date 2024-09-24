@@ -577,6 +577,15 @@ public class RangerSystemAccessControl
     }
   }
 
+  @Override
+  public void checkCanRefreshMaterializedView(SystemSecurityContext context, CatalogSchemaTableName materializedView) {
+    if(!hasPermission(createResource(materializedView),context,TrinoAccessType.UPDATE)){
+      LOG.debug("RangerSystemAccessControl.checkCanRefreshMaterializedView(" + materializedView.getSchemaTableName().getTableName() + ") denied");
+      AccessDeniedException.denyRefreshMaterializedView(materializedView.getSchemaTableName().getTableName());
+    }
+  }
+
+
   /**
    * This is evaluated against the table name as ownership information is not available
    */

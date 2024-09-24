@@ -17,6 +17,7 @@
 
 package org.apache.ranger.authorization.trino.authorizer;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.trino.spi.QueryId;
 import io.trino.spi.connector.CatalogSchemaName;
@@ -67,6 +68,7 @@ public class RangerSystemAccessControlTest {
   private static final Set<String> aliceColumns = Set.of("alice-col1", "alice-col2");
   private static final Set<String> aliceDeniedColumns = Set.of("alice-col3", "alice-col4");
   private static final CatalogSchemaTableName aliceView = new CatalogSchemaTableName("alice-catalog", "schema","view");
+  private static final CatalogSchemaTableName aliceMaterializedView = new CatalogSchemaTableName("alice-catalog", "schema","materialized-view");
 
   private static final CatalogSchemaRoutineName aliceProcedure = new CatalogSchemaRoutineName("alice-catalog", "schema", "procedure");
   private static final CatalogSchemaRoutineName aliceFunction = new CatalogSchemaRoutineName("alice-catalog", "schema", "function");
@@ -161,21 +163,29 @@ public class RangerSystemAccessControlTest {
 
   @Test
   @SuppressWarnings("PMD")
-  public void testViewOperations()
-  {
+  public void testViewOperations() {
     accessControlManager.checkCanCreateView(context(alice), aliceView);
     accessControlManager.checkCanDropView(context(alice), aliceView);
     accessControlManager.checkCanSelectFromColumns(context(alice), aliceView, ImmutableSet.of());
-    accessControlManager.checkCanCreateViewWithSelectFromColumns(context(alice), aliceTable, ImmutableSet.of());
-    accessControlManager.checkCanCreateViewWithSelectFromColumns(context(alice), aliceView, ImmutableSet.of());
-    accessControlManager.checkCanSetCatalogSessionProperty(context(alice), aliceCatalog, "property");
-    accessControlManager.checkCanGrantTablePrivilege(context(alice), SELECT, aliceTable, new TrinoPrincipal(USER, "grantee"), true);
-    accessControlManager.checkCanRevokeTablePrivilege(context(alice), SELECT, aliceTable, new TrinoPrincipal(USER, "revokee"), true);
+    accessControlManager.checkCanCreateViewWithSelectFromColumns(context(alice), aliceTable,
+        ImmutableSet.of());
+    accessControlManager.checkCanCreateViewWithSelectFromColumns(context(alice), aliceView,
+        ImmutableSet.of());
+    accessControlManager.checkCanSetCatalogSessionProperty(context(alice), aliceCatalog,
+        "property");
+    accessControlManager.checkCanGrantTablePrivilege(context(alice), SELECT, aliceTable,
+        new TrinoPrincipal(USER, "grantee"), true);
+    accessControlManager.checkCanRevokeTablePrivilege(context(alice), SELECT, aliceTable,
+        new TrinoPrincipal(USER, "revokee"), true);
+    accessControlManager.checkCanDropMaterializedView(context(alice), aliceMaterializedView);
+    accessControlManager.checkCanRefreshMaterializedView(context(alice), aliceMaterializedView);
 
     try {
       accessControlManager.checkCanCreateView(context(bob), aliceView);
     } catch (AccessDeniedException expected) {
     }
+    assertThrows(AccessDeniedException.class, () -> accessControlManager.checkCanCreateMaterializedView(context(alice), aliceMaterializedView,
+        ImmutableMap.of()));
   }
 
   @Test
