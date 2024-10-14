@@ -1010,7 +1010,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
-                        <argLine>${argLine} -Djava.library.path="${hadoop.library.path}${path.separator}${java.library.path}"</argLine>
+                        <argLine>${argLine} -Djava.security.manager=allow -Djava.library.path="${hadoop.library.path}${path.separator}${java.library.path}"</argLine>
                         <skipTests>${skipTests}</skipTests>
                         <encoding>UTF-8</encoding>
                         <systemProperties>
