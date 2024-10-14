@@ -40,6 +40,7 @@ services:
       - RANGER_TAGRSYNC_PASSWORD=rangerR0cks!
       - RANGER_USERSYNC_PASSWORD=rangerR0cks!
       - RANGER_KEYADMIN_PASSWORD=rangerR0cks!
+      - RANGER_ADMIN_MAX_HEAP_SIZE=2g
 
     command:
       - /home/ranger/scripts/ranger.sh

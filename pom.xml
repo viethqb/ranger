@@ -80,7 +80,7 @@
         <apacheds.version>2.0.0-M22</apacheds.version>
         <asm.all.version>3.2</asm.all.version>
         <aspectj.version>1.8.2</aspectj.version>
-        <assembly.plugin.version>2.6</assembly.plugin.version>
+        <assembly.plugin.version>3.7.1</assembly.plugin.version>
         <atlas.version>2.2.0</atlas.version>
         <atlas.jackson.version>2.11.3</atlas.jackson.version>
         <atlas.jackson.databind.version>2.11.3</atlas.jackson.databind.version>
@@ -185,7 +185,7 @@
         <owasp-java-html-sanitizer.version>20211018.2</owasp-java-html-sanitizer.version>
         <paranamer.version>2.3</paranamer.version>
         <presto.version>333</presto.version>
-        <trino.version>431</trino.version>
+        <trino.version>461</trino.version>
         <poi.version>5.2.2</poi.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <protobuf-java.version>3.19.3</protobuf-java.version>
@@ -324,8 +324,8 @@
                 <module>plugin-schema-registry</module>
                 <module>plugin-sqoop</module>
                 <module>ranger-sqoop-plugin-shim</module>
-                <module>plugin-kylin</module>
-                <module>ranger-kylin-plugin-shim</module>
+                <!-- <module>plugin-kylin</module>
+                <module>ranger-kylin-plugin-shim</module> -->
                 <module>plugin-elasticsearch</module>
                 <module>ranger-elasticsearch-plugin-shim</module>
                 <!--
@@ -837,7 +837,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-enforcer-plugin</artifactId>
-                        <version>1.4.1</version>
+                        <version>3.5.0</version>
                         <executions>
                             <execution>
                                 <id>enforce-maven</id>
@@ -1096,7 +1096,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.4.1</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>enforce-versions</id>

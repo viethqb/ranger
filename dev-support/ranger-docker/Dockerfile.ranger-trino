@@ -22,7 +22,7 @@ ARG RANGER_VERSION
 
 USER root
 # install sudo and allow trino user to use sudo without password
-RUN apt-get update && apt-get install -y sudo && apt-get clean && echo 'trino ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN microdnf update && microdnf install -y sudo && microdnf clean all && echo 'trino ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 COPY ./dist/${RANGER_VERSION}.tar.gz /etc/trino
 COPY ./scripts/trino/install.properties /etc/trino
