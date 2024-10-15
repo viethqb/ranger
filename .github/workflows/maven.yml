@@ -22,7 +22,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Java CI with Maven
+name: Java CI with Maven for Security Admin
 
 on:
   push:
@@ -44,4 +44,4 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build and Package with Maven
-      run: mvn -B clean package -DskipTests
+      run: mvn -B clean verify -P ranger-admin,'!all','!linux' 
