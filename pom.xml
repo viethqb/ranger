@@ -115,6 +115,8 @@
         <dnsjava.version>2.1.7</dnsjava.version>
         <eclipse.jpa.version>2.7.12</eclipse.jpa.version>
         <elasticsearch.version>7.10.2</elasticsearch.version>
+        <opensearch-java.version>2.15.0</opensearch-java.version>
+        <opensearch-rest-client.version>2.15.0</opensearch-rest-client.version>
         <enunciate.version>2.17.1</enunciate.version>
         <spotbugs.plugin.version>4.8.6.4</spotbugs.plugin.version>
         <google.guava.version>27.0-jre</google.guava.version>
