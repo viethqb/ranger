@@ -465,8 +465,8 @@ public class LdapUserGroupBuilder implements UserGroupSource {
 				deltaSyncUserTimeStamp = dateFormat.format(new Date(0));
 			}
 
-			extendedUserSearchFilter = "(objectclass=" + userObjectClass + ")(|(uSNChanged>=" + deltaSyncUserTime + ")(modifyTimestamp>=" + deltaSyncUserTimeStamp + "Z))";
-
+//			extendedUserSearchFilter = "(objectclass=" + userObjectClass + ")(|(uSNChanged>=" + deltaSyncUserTime + ")(modifyTimestamp>=" + deltaSyncUserTimeStamp + "Z))";
+			extendedUserSearchFilter = "(objectclass=" + userObjectClass + ")";
 			if (userSearchFilter != null && !userSearchFilter.trim().isEmpty()) {
 				String customFilter = userSearchFilter.trim();
 				if (!customFilter.startsWith("(")) {
@@ -707,7 +707,8 @@ public class LdapUserGroupBuilder implements UserGroupSource {
 				deltaSyncGroupTimeStamp = dateFormat.format(new Date(0));
 			}
 
-			extendedAllGroupsSearchFilter = "(&"  + extendedGroupSearchFilter + "(|(uSNChanged>=" + deltaSyncGroupTime + ")(modifyTimestamp>=" + deltaSyncGroupTimeStamp + "Z)))";
+//			extendedAllGroupsSearchFilter = "(&"  + extendedGroupSearchFilter + "(|(uSNChanged>=" + deltaSyncGroupTime + ")(modifyTimestamp>=" + deltaSyncGroupTimeStamp + "Z)))";
+			extendedAllGroupsSearchFilter = "(&"  + extendedGroupSearchFilter + ")";
 
 			LOG.info("extendedAllGroupsSearchFilter = " + extendedAllGroupsSearchFilter);
 			for (int ou=0; ou<groupSearchBase.length; ou++) {
